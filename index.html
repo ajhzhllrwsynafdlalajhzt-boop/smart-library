@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>المكتبة التفاعلية الشاملة</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #121214;
+      color: #e0e0e0;
+      padding: 30px;
+    }
+
+    h1 { text-align: center; margin-bottom: 20px; color: #ffb703; }
+
+    /* أدوات التحكم: البحث والتصفية */
+    .controls {
+      display: flex;
+      justify-content: space-between;
+      max-width: 900px;
+      margin: 0 auto 25px auto;
+      gap: 15px;
+    }
+
+    .search-bar, .filter-select {
+      padding: 10px 15px;
+      border-radius: 8px;
+      border: 1px solid #333;
+      background-color: #1e1e24;
+      color: #fff;
+      font-size: 1rem;
+    }
+    .search-bar { flex-grow: 1; }
+
+    /* شبكة الكتب */
+    .books-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+      max-width: 900px;
+      margin: 0 auto;
+      min-height: 400px;
+    }
+
+    /* كارت الكتاب */
+    .book-card {
+      background: #1e1e24;
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .book-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    }
+
+    .book-tag {
+      align-self: flex-start;
+      background: rgba(255, 183, 3, 0.15);
+      color: #ffb703;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      margin-bottom: 10px;
+    }
+
+    .book-title { font-size: 1.2rem; margin-bottom: 8px; font-weight: bold; }
+    .book-author { font-size: 0.9rem; color: #aaa; margin-bottom: 12px; }
+    .book-desc { font-size: 0.85rem; color: #ccc; line-height: 1.4; margin-bottom: 15px; }
+
+    .read-btn {
+      background: #ffb703;
+      color: #121214;
+      border: none;
+      padding: 8px;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      text-align: center;
+    }
+    .read-btn:hover { background: #fb8500; }
+
+    /* أزرار التصفح (Pagination) */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin-top: 30px;
+    }
+
+    .page-btn {
+      background: #1e1e24;
+      color: #fff;
+      border: 1px solid #333;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .page-btn.active {
+      background: #ffb703;
+      color: #121214;
+      font-weight: bold;
+    }
+
+    .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+  <h1>مكتبتنا التفاعلية الشاملة</h1>
+
+  <!-- شريط البحث والتصنيف -->
+  <div class="controls">
+    <input type="text" id="searchInput" class="search-bar" placeholder="ابحث باسم الكتاب أو المؤلف..." oninput="filterBooks()">
+    <select id="categoryFilter" class="filter-select" onchange="filterBooks()">
+      <option value="الكل">جميع التصنيفات</option>
+      <option value="تكنولوجيا">تكنولوجيا وقود</option>
+      <option value="روايات">روايات ودراما</option>
+      <option value="علوم">علوم وفلك</option>
+    </select>
+  </div>
+
+  <!-- شبكة عرض الكتب -->
+  <div id="booksContainer" class="books-grid"></div>
+
+  <!-- أزرار التنقل بين الصفحات -->
+  <div class="pagination" id="paginationControls"></div>
+
+  <script>
+    // مصفوفة تحتوي على عدد كبير من الكتب (يمكن زيادة العدد بسهولة)
+    const allBooks = [
+      { id: 1, title: "حكاية داخل الكمبيوتر", author: "ليان السالم", category: "تكنولوجيا", desc: "رحلة شيقة داخل الأكواد والخوارزميات البرمجية." },
+      { id: 2, title: "دفتر الضوء الباهت", author: "سارة النجار", category: "روايات", desc: "قصة عن الذكريات والبحث عن الأمل في أوقات التحدي." },
+      { id: 3, title: "النجوم أقرب مما نظن", author: "برهان عادل", category: "علوم", desc: "دليل مبسط لعجائب الكون والفيزياء الفلكية." },
+      { id: 4, title: "مدنية الحجر", author: "عمر فؤاد", category: "روايات", desc: "مغامرة تاريخية في أزقة المدن القديمة." },
+      { id: 5, title: "أساسيات خوارزميات الذكاء", author: "د. خالد أمين", category: "تكنولوجيا", desc: "شرح مبسط لبناء وتطوير الشبكات العصبية." },
+      { id: 6, title: "أسرار المجرات البعيدة", author: "د. مريم سلامة", category: "علوم", desc: "استكشاف لأعماق الفضاء الخارجي الثقوب السوداء." },
+      { id: 7, title: "رسائل إلى الغد", author: "أحمد منصور", category: "روايات", desc: "مجموعة نصوص أدبية تلهم التفكير والتأمل." },
+      { id: 8, title: "لغة العصر: Python", author: "مهندس طارق", category: "تكنولوجيا", desc: "مرجع علمي لتعلم برمجة الأدوات والتطبيقات الحديثة." },
+      { id: 9, title: "الفيزياء وتحديات المستقبل", author: "د. سامي رشدي", category: "علوم", desc: "كيف تعيد الفيزياء تشكيل اختراعات الغد." },
+      { id: 10, title: "حديقة الأسئلة", author: "هدى عثمان", category: "روايات", desc: "رحلة فلسفية للبحث عن الإجابات في تفاصيل الحياة." }
+    ];
+
+    let filteredBooks = [...allBooks];
+    let currentPage = 1;
+    const booksPerPage = 6; // عدد الكتب في كل صفحة
+
+    function renderBooks() {
+      const container = document.getElementById('booksContainer');
+      container.innerHTML = '';
+
+      // حساب الكتب المعروضة في الصفحة الحالية
+      const startIndex = (currentPage - 1) * booksPerPage;
+      const endIndex = startIndex + booksPerPage;
+      const pageBooks = filteredBooks.slice(startIndex, endIndex);
+
+      if (pageBooks.length === 0) {
+        container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #888;">لا توجد كتب تطابق بحثك.</p>';
+        return;
+      }
+
+      pageBooks.forEach(book => {
+        const card = document.createElement('div');
+        card.className = 'book-card';
+        card.innerHTML = `
+          <div>
+            <span class="book-tag">${book.category}</span>
+            <div class="book-title">${book.title}</div>
+            <div class="book-author">${book.author}</div>
+            <div class="book-desc">${book.desc}</div>
+          </div>
+          <button class="read-btn">اقرأ الآن</button>
+        `;
+        container.appendChild(card);
+      });
+
+      renderPagination();
+    }
+
+    function renderPagination() {
+      const controls = document.getElementById('paginationControls');
+      controls.innerHTML = '';
+
+      const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
+      if (totalPages <= 1) return;
+
+      // زر الصفحة السابقة
+      const prevBtn = document.createElement('button');
+      prevBtn.className = 'page-btn';
+      prevBtn.innerText = 'السابق';
+      prevBtn.disabled = currentPage === 1;
+      prevBtn.onclick = () => { currentPage--; renderBooks(); };
+      controls.appendChild(prevBtn);
+
+      // أرقام الصفحات
+      for (let i = 1; i <= totalPages; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+        pageBtn.innerText = i;
+        pageBtn.onclick = () => { currentPage = i; renderBooks(); };
+        controls.appendChild(pageBtn);
+      }
+
+      // زر الصفحة التالية
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'page-btn';
+      nextBtn.innerText = 'التالي';
+      nextBtn.disabled = currentPage === totalPages;
+      nextBtn.onclick = () => { currentPage++; renderBooks(); };
+      controls.appendChild(nextBtn);
+    }
+
+    function filterBooks() {
+      const searchValue = document.getElementById('searchInput').value.toLowerCase();
+      const categoryValue = document.getElementById('categoryFilter').value;
+
+      filteredBooks = allBooks.filter(book => {
+        const matchesSearch = book.title.toLowerCase().includes(searchValue) || book.author.toLowerCase().includes(searchValue);
+        const matchesCategory = categoryValue === 'الكل' || book.category === categoryValue;
+        return matchesSearch && matchesCategory;
+      });
+
+      currentPage = 1; // العودة للصفحة الأولى عند الفلترة
+      renderBooks();
+    }
+
+    // التشغيل المبدئي
+    renderBooks();
+  </script>
+</body>
+  </html>
