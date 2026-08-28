@@ -2,238 +2,473 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <title>المكتبة التفاعلية الشاملة</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>مكتبتي الحديثة | Dynamic Ambient Library</title>
+  <!-- Google Fonts & FontAwesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+      --card-bg: rgba(255, 255, 255, 0.07);
+      --card-border: rgba(255, 255, 255, 0.12);
+      --accent-color: #8b5cf6;
+      --accent-glow: #a855f7;
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Tajawal', sans-serif;
+    }
+
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background-color: #121214;
-      color: #e0e0e0;
-      padding: 30px;
-    }
-
-    h1 { text-align: center; margin-bottom: 20px; color: #ffb703; }
-
-    /* أدوات التحكم: البحث والتصفية */
-    .controls {
-      display: flex;
-      justify-content: space-between;
-      max-width: 900px;
-      margin: 0 auto 25px auto;
-      gap: 15px;
-    }
-
-    .search-bar, .filter-select {
-      padding: 10px 15px;
-      border-radius: 8px;
-      border: 1px solid #333;
-      background-color: #1e1e24;
-      color: #fff;
-      font-size: 1rem;
-    }
-    .search-bar { flex-grow: 1; }
-
-    /* شبكة الكتب */
-    .books-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 20px;
-      max-width: 900px;
-      margin: 0 auto;
-      min-height: 400px;
-    }
-
-    /* كارت الكتاب */
-    .book-card {
-      background: #1e1e24;
-      border-radius: 12px;
-      padding: 20px;
-      border: 1px solid rgba(255,255,255,0.05);
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      transition: transform 0.2s, box-shadow 0.2s;
+      overflow-x: hidden;
+      transition: background 0.8s ease-in-out;
+    }
+
+    /* Header */
+    header {
+      padding: 2rem 1.5rem 1rem;
+      text-align: center;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #c084fc, #e879f9, #38bdf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      color: var(--text-sub);
+      font-size: 0.95rem;
+    }
+
+    /* Controls Bar */
+    .controls-bar {
+      display: flex;
+      gap: 10px;
+      padding: 1rem 1.5rem;
+      max-width: 600px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .search-box {
+      position: relative;
+      flex: 1;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 12px 40px 12px 15px;
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      background: rgba(15, 23, 42, 0.6);
+      color: #fff;
+      backdrop-filter: blur(10px);
+      outline: none;
+      transition: all 0.3s;
+    }
+
+    .search-box input:focus {
+      border-color: var(--accent-glow);
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+    }
+
+    .search-box i {
+      position: absolute;
+      right: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-sub);
+    }
+
+    /* Slider / Carousel */
+    .slider-section {
+      padding: 1.5rem 0;
+    }
+
+    .section-title {
+      padding: 0 1.5rem;
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .carousel-container {
+      display: flex;
+      gap: 20px;
+      overflow-x: auto;
+      padding: 1rem 1.5rem 2rem;
+      scroll-behavior: smooth;
+      scrollbar-width: none;
+    }
+
+    .carousel-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Book Cards */
+    .book-card {
+      min-width: 170px;
+      max-width: 170px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 12px;
+      backdrop-filter: blur(12px);
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
     }
 
     .book-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+      transform: translateY(-10px) scale(1.03);
+      border-color: var(--accent-glow);
+      box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(139, 92, 246, 0.3);
     }
 
-    .book-tag {
-      align-self: flex-start;
-      background: rgba(255, 183, 3, 0.15);
-      color: #ffb703;
-      padding: 4px 10px;
-      border-radius: 6px;
+    .cover-wrapper {
+      width: 100%;
+      height: 220px;
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 10px;
+      position: relative;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .cover-wrapper img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .tag {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: rgba(15, 23, 42, 0.85);
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      color: #c084fc;
+      border: 1px solid rgba(192, 132, 252, 0.3);
+      backdrop-filter: blur(4px);
+    }
+
+    .book-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .book-author {
       font-size: 0.8rem;
+      color: var(--text-sub);
       margin-bottom: 10px;
     }
 
-    .book-title { font-size: 1.2rem; margin-bottom: 8px; font-weight: bold; }
-    .book-author { font-size: 0.9rem; color: #aaa; margin-bottom: 12px; }
-    .book-desc { font-size: 0.85rem; color: #ccc; line-height: 1.4; margin-bottom: 15px; }
-
     .read-btn {
-      background: #ffb703;
-      color: #121214;
-      border: none;
+      margin-top: auto;
+      width: 100%;
       padding: 8px;
-      border-radius: 6px;
-      font-weight: bold;
-      cursor: pointer;
-      text-align: center;
-    }
-    .read-btn:hover { background: #fb8500; }
-
-    /* أزرار التصفح (Pagination) */
-    .pagination {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      margin-top: 30px;
-    }
-
-    .page-btn {
-      background: #1e1e24;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #8b5cf6, #d946ef);
       color: #fff;
-      border: 1px solid #333;
-      padding: 8px 14px;
-      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.85rem;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
     }
 
-    .page-btn.active {
-      background: #ffb703;
-      color: #121214;
-      font-weight: bold;
+    /* Interactive Dynamic Reader Modal */
+    .reader-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-position: center;
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
     }
 
-    .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .reader-modal.active {
+      display: flex;
+      opacity: 1;
+    }
+
+    .reader-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(15px);
+      z-index: 1;
+    }
+
+    .reader-content-wrapper {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .reader-header {
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .reader-controls {
+      display: flex;
+      gap: 10px;
+    }
+
+    .icon-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #fff;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.3s;
+    }
+
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+
+    .reader-body {
+      flex: 1;
+      padding: 2rem 1.5rem;
+      max-width: 750px;
+      margin: 1.5rem auto;
+      overflow-y: auto;
+      line-height: 2;
+      font-size: 1.15rem;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .reader-footer {
+      padding: 1rem;
+      text-align: center;
+      border-top: 1px solid var(--card-border);
+      font-size: 0.85rem;
+      color: var(--text-sub);
+    }
   </style>
 </head>
 <body>
 
-  <h1>مكتبتنا التفاعلية الشاملة</h1>
+  <header>
+    <h1>مكتبتي التفاعلية</h1>
+    <p>استكشفي عالم الكتب بأجواء تفاعلية وأصوات هادئة</p>
+  </header>
 
-  <!-- شريط البحث والتصنيف -->
-  <div class="controls">
-    <input type="text" id="searchInput" class="search-bar" placeholder="ابحث باسم الكتاب أو المؤلف..." oninput="filterBooks()">
-    <select id="categoryFilter" class="filter-select" onchange="filterBooks()">
-      <option value="الكل">جميع التصنيفات</option>
-      <option value="تكنولوجيا">تكنولوجيا وقود</option>
-      <option value="روايات">روايات ودراما</option>
-      <option value="علوم">علوم وفلك</option>
-    </select>
+  <div class="controls-bar">
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="searchInput" placeholder="ابحثي عن كتاب أو مؤلف..." onkeyup="filterBooks()">
+    </div>
   </div>
 
-  <!-- شبكة عرض الكتب -->
-  <div id="booksContainer" class="books-grid"></div>
+  <div class="slider-section">
+    <div class="section-title">
+      <i class="fa-solid fa-fire-flame-curved" style="color: #ec4899;"></i>
+      <span>الأكثر قراءة وموصى به</span>
+    </div>
+    
+    <div class="carousel-container" id="booksContainer"></div>
+  </div>
 
-  <!-- أزرار التنقل بين الصفحات -->
-  <div class="pagination" id="paginationControls"></div>
+  <!-- الشاشة التفاعلية للقراءة (Ambient Reader) -->
+  <div class="reader-modal" id="readerModal">
+    <div class="reader-overlay"></div>
+    <div class="reader-content-wrapper">
+      <div class="reader-header">
+        <div>
+          <h3 id="modalBookTitle" style="font-size: 1.1rem;">عنوان الكتاب</h3>
+          <span id="modalAuthor" style="font-size: 0.8rem; color: var(--text-sub);">الكاتب</span>
+        </div>
+        <div class="reader-controls">
+          <button class="icon-btn" id="audioBtn" onclick="toggleAudio()" title="تشغيل/كتم الصوت الأجواء"><i class="fa-solid fa-volume-high"></i></button>
+          <button class="icon-btn" onclick="changeFontSize(1)" title="تكبير الخط"><i class="fa-solid fa-plus"></i></button>
+          <button class="icon-btn" onclick="changeFontSize(-1)" title="تصغير الخط"><i class="fa-solid fa-minus"></i></button>
+          <button class="icon-btn" onclick="closeReader()" title="إغلاق"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+      </div>
+
+      <div class="reader-body" id="readerBody">
+        <p id="readerContent">جاري تحميل الفصل...</p>
+      </div>
+
+      <div class="reader-footer">
+        <span>بيئة القراءة التفاعلية الأجواء (Ambient Reading) • Smart Library</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- صوت الأجواء التفاعلي -->
+  <audio id="ambientAudio" loop src="https://assets.mixkit.co/active_storage/sfx/2515/2515-preview.mp3"></audio>
 
   <script>
-    // مصفوفة تحتوي على عدد كبير من الكتب (يمكن زيادة العدد بسهولة)
-    const allBooks = [
-      { id: 1, title: "حكاية داخل الكمبيوتر", author: "ليان السالم", category: "تكنولوجيا", desc: "رحلة شيقة داخل الأكواد والخوارزميات البرمجية." },
-      { id: 2, title: "دفتر الضوء الباهت", author: "سارة النجار", category: "روايات", desc: "قصة عن الذكريات والبحث عن الأمل في أوقات التحدي." },
-      { id: 3, title: "النجوم أقرب مما نظن", author: "برهان عادل", category: "علوم", desc: "دليل مبسط لعجائب الكون والفيزياء الفلكية." },
-      { id: 4, title: "مدنية الحجر", author: "عمر فؤاد", category: "روايات", desc: "مغامرة تاريخية في أزقة المدن القديمة." },
-      { id: 5, title: "أساسيات خوارزميات الذكاء", author: "د. خالد أمين", category: "تكنولوجيا", desc: "شرح مبسط لبناء وتطوير الشبكات العصبية." },
-      { id: 6, title: "أسرار المجرات البعيدة", author: "د. مريم سلامة", category: "علوم", desc: "استكشاف لأعماق الفضاء الخارجي الثقوب السوداء." },
-      { id: 7, title: "رسائل إلى الغد", author: "أحمد منصور", category: "روايات", desc: "مجموعة نصوص أدبية تلهم التفكير والتأمل." },
-      { id: 8, title: "لغة العصر: Python", author: "مهندس طارق", category: "تكنولوجيا", desc: "مرجع علمي لتعلم برمجة الأدوات والتطبيقات الحديثة." },
-      { id: 9, title: "الفيزياء وتحديات المستقبل", author: "د. سامي رشدي", category: "علوم", desc: "كيف تعيد الفيزياء تشكيل اختراعات الغد." },
-      { id: 10, title: "حديقة الأسئلة", author: "هدى عثمان", category: "روايات", desc: "رحلة فلسفية للبحث عن الإجابات في تفاصيل الحياة." }
+    const books = [
+      {
+        id: 1,
+        title: "حكاية داخل الكمبيوتر",
+        author: "ليان السالم",
+        category: "تكنولوجيا",
+        bg: "linear-gradient(135deg, #0284c7 0%, #0f172a 100%)",
+        cover: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=400&q=80",
+        content: "بدأت الرحلة عندما فتح خالد شاشة حاسوبه القديم ليجد رسالة غامضة تتلألأ بالأخضر. لم تكن مجرد كود برمجيات عادي، بل كانت مدخلاً إلى عالم البرمجة الخفي حيث تتنفس الخوارزميات وتتحدث اللغات البرمجية بلغة المنطق والمغامرة..."
+      },
+      {
+        id: 2,
+        title: "دفتر الضوء الباهت",
+        author: "سارة النجار",
+        category: "روايات",
+        bg: "linear-gradient(135deg, #b45309 0%, #1e1b18 100%)",
+        cover: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=400&q=80",
+        content: "في زاوية المكتبة القادمة من منتصف القرن الماضي، كان هناك دفتر صغير ذو غلاف جلدي بني. تحكي صفحاته عن الذكريات التي يخلفها الضوء خلف الأبواب المغلقة وكيف يمكن للأمل أن يضيء أعتى الليالي وأكثرها ظلاماً..."
+      },
+      {
+        id: 3,
+        title: "النجوم أقرب مما نظن",
+        author: "برهان عادل",
+        category: "علوم",
+        bg: "linear-gradient(135deg, #581c87 0%, #0f172a 100%)",
+        cover: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=400&q=80",
+        content: "عندما ننظر إلى السماء ليلاً، نعتقد أن الفضاء بعيد جداً. لكن الفيزياء الحديثة وعلم الفلك يخبراننا أن الذرات التي تشكل أجسادنا ولدت في قلوب النجوم الميتة. نحن لسنا مجرد مراقبين للكون، بل نحن جزء لا يتجزأ منه..."
+      },
+      {
+        id: 4,
+        title: "أساسيات الذكاء الاصطناعي",
+        author: "د. خالد أمين",
+        category: "تكنولوجيا",
+        bg: "linear-gradient(135deg, #0d9488 0%, #0f172a 100%)",
+        cover: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=400&q=80",
+        content: "الشبكات العصبية الاصطناعية محاكاة بسيطة للطريقة التي يفكر بها العقل البشري. من خلال تعلم الأنماط ومعالجة البيانات الضخمة، استطاعت التكنولوجيا الحديثة أن تفتح أفاقاً جديدة في تطوير البرمجيات وحل المشكلات المعقدة..."
+      }
     ];
 
-    let filteredBooks = [...allBooks];
-    let currentPage = 1;
-    const booksPerPage = 6; // عدد الكتب في كل صفحة
+    let currentFontSize = 1.15;
+    const audio = document.getElementById('ambientAudio');
+    let isPlaying = false;
 
-    function renderBooks() {
+    function renderBooks(data) {
       const container = document.getElementById('booksContainer');
       container.innerHTML = '';
 
-      // حساب الكتب المعروضة في الصفحة الحالية
-      const startIndex = (currentPage - 1) * booksPerPage;
-      const endIndex = startIndex + booksPerPage;
-      const pageBooks = filteredBooks.slice(startIndex, endIndex);
-
-      if (pageBooks.length === 0) {
-        container.innerHTML = '<p style="grid-column: 1/-1; text-align: center; color: #888;">لا توجد كتب تطابق بحثك.</p>';
-        return;
-      }
-
-      pageBooks.forEach(book => {
+      data.forEach(book => {
         const card = document.createElement('div');
         card.className = 'book-card';
+        card.onclick = () => openReader(book);
+
         card.innerHTML = `
-          <div>
-            <span class="book-tag">${book.category}</span>
-            <div class="book-title">${book.title}</div>
-            <div class="book-author">${book.author}</div>
-            <div class="book-desc">${book.desc}</div>
+          <div class="cover-wrapper">
+            <span class="tag">${book.category}</span>
+            <img src="${book.cover}" alt="${book.title}">
           </div>
-          <button class="read-btn">اقرأ الآن</button>
+          <div class="book-title">${book.title}</div>
+          <div class="book-author">${book.author}</div>
+          <button class="read-btn">
+            <i class="fa-solid fa-book-open"></i> اقرأ الآن
+          </button>
         `;
         container.appendChild(card);
       });
-
-      renderPagination();
-    }
-
-    function renderPagination() {
-      const controls = document.getElementById('paginationControls');
-      controls.innerHTML = '';
-
-      const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
-      if (totalPages <= 1) return;
-
-      // زر الصفحة السابقة
-      const prevBtn = document.createElement('button');
-      prevBtn.className = 'page-btn';
-      prevBtn.innerText = 'السابق';
-      prevBtn.disabled = currentPage === 1;
-      prevBtn.onclick = () => { currentPage--; renderBooks(); };
-      controls.appendChild(prevBtn);
-
-      // أرقام الصفحات
-      for (let i = 1; i <= totalPages; i++) {
-        const pageBtn = document.createElement('button');
-        pageBtn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
-        pageBtn.innerText = i;
-        pageBtn.onclick = () => { currentPage = i; renderBooks(); };
-        controls.appendChild(pageBtn);
-      }
-
-      // زر الصفحة التالية
-      const nextBtn = document.createElement('button');
-      nextBtn.className = 'page-btn';
-      nextBtn.innerText = 'التالي';
-      nextBtn.disabled = currentPage === totalPages;
-      nextBtn.onclick = () => { currentPage++; renderBooks(); };
-      controls.appendChild(nextBtn);
     }
 
     function filterBooks() {
-      const searchValue = document.getElementById('searchInput').value.toLowerCase();
-      const categoryValue = document.getElementById('categoryFilter').value;
-
-      filteredBooks = allBooks.filter(book => {
-        const matchesSearch = book.title.toLowerCase().includes(searchValue) || book.author.toLowerCase().includes(searchValue);
-        const matchesCategory = categoryValue === 'الكل' || book.category === categoryValue;
-        return matchesSearch && matchesCategory;
-      });
-
-      currentPage = 1; // العودة للصفحة الأولى عند الفلترة
-      renderBooks();
+      const query = document.getElementById('searchInput').value.toLowerCase();
+      const filtered = books.filter(b => 
+        b.title.toLowerCase().includes(query) || 
+        b.author.toLowerCase().includes(query)
+      );
+      renderBooks(filtered);
     }
 
-    // التشغيل المبدئي
-    renderBooks();
+    function openReader(book) {
+      document.getElementById('modalBookTitle').innerText = book.title;
+      document.getElementById('modalAuthor').innerText = book.author;
+      document.getElementById('readerContent').innerText = book.content;
+
+      const modal = document.getElementById('readerModal');
+      modal.style.background = book.bg;
+      modal.classList.add('active');
+
+      // تشغيل الصوت التفاعلي فوراً
+      audio.play().then(() => {
+        isPlaying = true;
+        document.getElementById('audioBtn').innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+      }).catch(() => {
+        // حماية المتصفحات التي تمنع الصوت التلقائي
+      });
+    }
+
+    function closeReader() {
+      document.getElementById('readerModal').classList.remove('active');
+      audio.pause();
+      audio.currentTime = 0;
+      isPlaying = false;
+    }
+
+    function toggleAudio() {
+      const btn = document.getElementById('audioBtn');
+      if (isPlaying) {
+        audio.pause();
+        btn.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
+      } else {
+        audio.play();
+        btn.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+      }
+      isPlaying = !isPlaying;
+    }
+
+    function changeFontSize(delta) {
+      currentFontSize = Math.max(0.9, Math.min(1.6, currentFontSize + delta * 0.1));
+      document.getElementById('readerBody').style.fontSize = currentFontSize + 'rem';
+    }
+
+    renderBooks(books);
   </script>
 </body>
   </html>
